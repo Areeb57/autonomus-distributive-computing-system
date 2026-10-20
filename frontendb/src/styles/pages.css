@@ -1,0 +1,458 @@
+/* Startup Step Guide (No Agent Connected) */
+.startup-view {
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.startup-heading {
+  font-size: 26px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.step-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.step-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.step-action-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Returning User Dashboard (Master / Worker) */
+.returning-dashboard {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.role-greeting {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  letter-spacing: -0.015em;
+}
+
+.returning-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Master Project Setup Form */
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-helper {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Review Project Page */
+.review-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  min-width: 140px;
+}
+
+.review-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* Project Code Display */
+.project-code-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+}
+
+.project-code-text {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+/* Progress & Metrics Dashboard */
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: var(--border-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 12px 0 6px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--text-primary);
+  transition: width 0.4s ease;
+}
+
+/* Worker Cards Grid (Master View) */
+.workers-section {
+  margin-top: 32px;
+}
+
+.workers-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.worker-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.worker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.worker-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.worker-meta-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 12px;
+}
+
+.worker-meta-item {
+  color: var(--text-secondary);
+}
+
+.worker-meta-item strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Controls Bar */
+.controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Join Project Form (Worker) */
+.join-container {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.code-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.code-input {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 4px;
+  padding: 14px;
+}
+
+.input-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+/* Resource Allocation Sliders (Worker & Shared) */
+.resource-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.hardware-summary {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.hardware-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hardware-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.hardware-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.slider-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.slider-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.slider-current-val {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.slider-limits {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Settings Sections */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}

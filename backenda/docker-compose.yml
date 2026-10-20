@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: adc_postgres
+    environment:
+      POSTGRES_USER: adc
+      POSTGRES_PASSWORD: adc_dev_password
+      POSTGRES_DB: adc_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - adc_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adc -d adc_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  adc_pgdata:
+    driver: local
