@@ -165,8 +165,12 @@ export const ResourceAllocation: React.FC = () => {
   const hasLiveCapacity = !!live && availableRam !== null && availableDisk !== null;
   const maxRam = availableRam ?? 0;
   const maxDisk = availableDisk ?? 0;
-  const maxRamSlider = Math.max(0, Math.floor(maxRam * 2) / 2);
-  const maxDiskSlider = Math.max(0, Math.floor(maxDisk));
+  // Keep one decimal place and round DOWN so the UI never permits more than the
+  // agent's currently reported available capacity (for example, 0.6 GB stays 0.6).
+  const maxRamSlider = Math.max(0, Math.floor((maxRam + 1e-8) * 10) / 10);
+  const maxDiskSlider = Math.max(0, Math.floor((maxDisk + 1e-8) * 10) / 10);
+  // Allow a 0.3 GB RAM minimum when the machine has at least that much free RAM.
+  const minRamSlider = maxRamSlider >= 0.3 ? 0.3 : 0;
   const allocatedCores = logicalCores && logicalCores > 0
     ? Math.max(1, Math.round(logicalCores * cpuPercent / 100))
     : 0;
@@ -174,9 +178,11 @@ export const ResourceAllocation: React.FC = () => {
 
   // Clamp chosen allocations if available resources shrink while this page is open.
   useEffect(() => {
-    setRamGb(current => Math.min(current, maxRamSlider));
+    // Do not clamp the defaults to zero before the agent's first live response.
+    if (!live) return;
+    setRamGb(current => Math.max(minRamSlider, Math.min(current, maxRamSlider)));
     setStorageGb(current => Math.min(current, maxDiskSlider));
-  }, [maxRamSlider, maxDiskSlider]);
+  }, [live, minRamSlider, maxRamSlider, maxDiskSlider]);
 
   const connectionLabel = useMemo(() => {
     if (!live) return agentChecked ? 'Agent disconnected' : 'Checking agent…';
@@ -307,27 +313,27 @@ export const ResourceAllocation: React.FC = () => {
         <ResourceSlider
           id="cpu-slider" title="CPU Compute Contribution" value={cpuPercent} unit="%"
           displayValue={`${cpuPercent}% (${allocatedCores || '—'} logical cores)`}
-          min={10} max={100} step={5}
+          min={10} max={100} step={1} inputStep={1}
           subtext={`Detected: ${logicalCores ?? 'unknown'} logical cores; current free CPU capacity: ${fmt(availableCpuPercent)}%`}
           onChange={setCpuPercent} disabled={!live || !logicalCores}
         />
         <ResourceSlider
           id="ram-slider" title="Memory (RAM) Allocation" value={ramGb} unit="GB"
-          min={maxRamSlider > 0 ? Math.min(0.5, maxRamSlider) : 0} max={maxRamSlider} step={0.5}
-          subtext={`Current available RAM: ${fmt(availableRam)} GB`}
+          min={minRamSlider} max={maxRamSlider} step={0.1} inputStep={0.1}
+          subtext={`Current available RAM: ${fmt(availableRam)} GB. Select from ${minRamSlider.toFixed(1)} GB to ${maxRamSlider.toFixed(1)} GB, or type a value.`}
           onChange={setRamGb} disabled={!live || maxRamSlider <= 0}
         />
         <ResourceSlider
           id="gpu-slider" title="GPU VRAM Contribution" value={gpuPercent} unit="%"
           displayValue={hasGpu ? `${gpuPercent}% (~${fmt(allocatedVram)} GB VRAM)` : 'GPU telemetry unavailable'}
-          min={0} max={100} step={5}
+          min={0} max={100} step={1} inputStep={1}
           subtext={hasGpu ? `${fmt(availableVram)} GB currently available VRAM` : 'No reliable live VRAM measurement detected'}
           onChange={setGpuPercent} disabled={!live || !hasGpu}
         />
         <ResourceSlider
           id="storage-slider" title="Scratch Storage Allocation" value={storageGb} unit="GB"
-          min={maxDiskSlider > 0 ? Math.min(1, maxDiskSlider) : 0} max={maxDiskSlider} step={1}
-          subtext={`Current available disk space: ${fmt(availableDisk)} GB`}
+          min={0} max={maxDiskSlider} step={0.1} inputStep={0.1}
+          subtext={`Current available disk space: ${fmt(availableDisk)} GB; values are capped at the detected free space.`}
           onChange={setStorageGb} disabled={!live || maxDiskSlider <= 0}
         />
       </div>
