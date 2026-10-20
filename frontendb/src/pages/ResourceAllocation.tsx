@@ -141,10 +141,14 @@ export const ResourceAllocation: React.FC = () => {
   const physicalCores = live?.physicalCpuCores ?? profile.physicalCpuCores ?? null;
   const logicalCores = live?.logicalCpuCores ?? profile.logicalCpuCores ?? null;
   const totalRam = live?.totalRamGB ?? profile.totalRamGB ?? null;
-  const gpuVendor = live?.gpuVendor ?? profile.gpuVendor ?? 'Unknown';
-  const gpuModel = live?.gpuModel ?? profile.gpuModel ?? 'Not detected';
-  const gpuBackend = live?.gpuComputeBackend ?? profile.gpuComputeBackend ?? 'Unknown';
-  const totalVram = live?.totalGpuMemoryGB ?? profile.totalGpuMemoryGB ?? null;
+  // Once the agent is live, treat its response as authoritative (including null values).
+  // This prevents a saved GPU profile from another session/computer overriding a no-GPU result.
+  const gpuVendor = live ? (live.gpuVendor || 'Unknown') : (profile.gpuVendor ?? 'Unknown');
+  const gpuModel = live ? (live.gpuModel || 'Not detected') : (profile.gpuModel ?? 'Not detected');
+  const gpuBackend = live ? (live.gpuComputeBackend || 'Unknown') : (profile.gpuComputeBackend ?? 'Unknown');
+  const totalVram = live
+    ? numberOrNull(live.totalGpuMemoryGB)
+    : numberOrNull(profile.totalGpuMemoryGB);
   const totalDisk = live?.totalDiskGB ?? profile.totalDiskGB ?? null;
   const osName = live?.osName ?? profile.osName ?? 'Unknown';
   const osVersion = live?.osVersion ?? profile.osVersion ?? 'Unknown';
@@ -161,7 +165,22 @@ export const ResourceAllocation: React.FC = () => {
   const latency = numberOrNull(live?.networkLatencyMs ?? profile.networkLatencyMs);
   const packetLoss = numberOrNull(live?.packetLossPercent ?? profile.packetLossPercent);
 
-  const hasGpu = totalVram !== null && totalVram > 0 && availableVram !== null;
+  const isUnavailableGpuLabel = (value: string | null | undefined): boolean => {
+    const normalized = (value ?? '').trim().toLowerCase();
+    return !normalized ||
+      ['unknown', 'not detected', 'none', 'no gpu', 'no gpu detected', 'unavailable', 'n/a'].includes(normalized) ||
+      normalized.includes('no supported gpu');
+  };
+  const gpuDetected = !isUnavailableGpuLabel(gpuModel) ||
+    !isUnavailableGpuLabel(gpuVendor) ||
+    !isUnavailableGpuLabel(gpuBackend) ||
+    (totalVram !== null && totalVram > 0);
+  const hasGpu = gpuDetected && totalVram !== null && totalVram > 0 && availableVram !== null && availableVram > 0;
+  const gpuStatusMessage = !gpuDetected
+    ? 'No GPU detected. You can still join using CPU, RAM and storage; GPU contribution will be set to 0%.'
+    : !hasGpu
+      ? 'GPU detected, but usable VRAM is unavailable. You can still join using CPU, RAM and storage without GPU acceleration.'
+      : `GPU ready · ${fmt(availableVram)} GB VRAM available.`;
   const hasLiveCapacity = !!live && availableRam !== null && availableDisk !== null;
   const maxRam = availableRam ?? 0;
   const maxDisk = availableDisk ?? 0;
@@ -183,6 +202,14 @@ export const ResourceAllocation: React.FC = () => {
     setRamGb(current => Math.max(minRamSlider, Math.min(current, maxRamSlider)));
     setStorageGb(current => Math.min(current, maxDiskSlider));
   }, [live, minRamSlider, maxRamSlider, maxDiskSlider]);
+
+  // The GPU control is disabled when GPU/VRAM is absent, so set its allocation to
+  // zero automatically. This lets CPU-only machines continue without a GPU error.
+  useEffect(() => {
+    if (live && !hasGpu) {
+      setGpuPercent(current => current === 0 ? current : 0);
+    }
+  }, [live, hasGpu]);
 
   const connectionLabel = useMemo(() => {
     if (!live) return agentChecked ? 'Agent disconnected' : 'Checking agent…';
@@ -207,11 +234,6 @@ export const ResourceAllocation: React.FC = () => {
       setJoinError(`Storage allocation must be greater than 0 and no more than ${fmt(availableDisk)} GB currently available.`);
       return;
     }
-    if (gpuPercent > 0 && !hasGpu) {
-      setJoinError('GPU memory availability could not be detected. Set GPU contribution to 0 or verify GPU telemetry in adc_agent.py.');
-      return;
-    }
-
     const codeToJoin = pendingWorkerCode || workerProject?.projectCode || '';
     if (!codeToJoin) {
       setJoinError('No project code specified.');
@@ -277,9 +299,9 @@ export const ResourceAllocation: React.FC = () => {
         </div>
         <div className="hardware-item">
           <span className="hardware-label"><Monitor size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} />Detected GPU</span>
-          <span className="hardware-val">{gpuModel}</span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{gpuVendor} · Backend: {gpuBackend}</span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>VRAM: {fmt(availableVram)} GB available / {fmt(totalVram)} GB total</span>
+          <span className="hardware-val">{gpuDetected ? gpuModel : 'No GPU detected'}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{gpuDetected ? `${gpuVendor} · Backend: ${gpuBackend}` : 'This worker can contribute CPU, RAM and storage without a GPU.'}</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{hasGpu ? `VRAM: ${fmt(availableVram)} GB available / ${fmt(totalVram)} GB total` : 'GPU contribution: 0% (not required to join)'}</span>
         </div>
         <div className="hardware-item">
           <span className="hardware-label"><HardDrive size={14} style={{ verticalAlign: 'middle', marginRight: 5 }} />Scratch Storage</span>
@@ -287,6 +309,13 @@ export const ResourceAllocation: React.FC = () => {
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Total: {fmt(totalDisk)} GB</span>
         </div>
       </div>
+
+      {live && !hasGpu && (
+        <div role="status" style={{ padding: '11px 14px', border: '1px solid var(--border-color, #ddd)', borderRadius: 'var(--radius-md)', margin: '14px 0', fontSize: 13 }}>
+          <strong>{gpuDetected ? 'GPU acceleration unavailable.' : 'No GPU detected.'}</strong>{' '}
+          {gpuStatusMessage}
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, margin: '16px 0' }}>
         <div className="hardware-item">
@@ -325,9 +354,9 @@ export const ResourceAllocation: React.FC = () => {
         />
         <ResourceSlider
           id="gpu-slider" title="GPU VRAM Contribution" value={gpuPercent} unit="%"
-          displayValue={hasGpu ? `${gpuPercent}% (~${fmt(allocatedVram)} GB VRAM)` : 'GPU telemetry unavailable'}
+          displayValue={hasGpu ? `${gpuPercent}% (~${fmt(allocatedVram)} GB VRAM)` : gpuDetected ? 'VRAM unavailable — 0%' : 'No GPU detected — 0%'}
           min={0} max={100} step={1} inputStep={1}
-          subtext={hasGpu ? `${fmt(availableVram)} GB currently available VRAM` : 'No reliable live VRAM measurement detected'}
+          subtext={hasGpu ? `${fmt(availableVram)} GB currently available VRAM` : gpuStatusMessage}
           onChange={setGpuPercent} disabled={!live || !hasGpu}
         />
         <ResourceSlider
